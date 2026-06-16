@@ -1,0 +1,4 @@
+[ERROR] Error executing Maven.
+[ERROR] 1 problem was encountered while building the effective settings
+[FATAL] Non-readable settings C:\Users\postb\.m2\settings.xml: input contained no data @ C:\Users\postb\.m2\settings.xml
+
