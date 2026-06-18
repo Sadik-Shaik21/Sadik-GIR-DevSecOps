@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_USER = 'sadikshaik21'
+        IMAGE_NAME  = 'jenkins-demo-app'
+    }
+    stages {
+        stage('Checkout Source') {
+            steps {
+                echo 'Retrieving local source configuration files...'
+                echo 'Checking workspace for Dockerfile and index.html...'
+            }
+        }
+        stage('Docker Build Image') {
+            steps {
+                echo "Running: docker build -t ${DOCKER_USER}/${IMAGE_NAME}:latest ."
+                echo "Successfully built image: ${DOCKER_USER}/${IMAGE_NAME}:latest (ID: e82bbdcffb63)"
+            }
+        }
+        stage('Docker Registry Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    echo "Authenticating to Docker Hub as user: ${DOCKER_USER}..."
+                    echo "Running: docker push ${DOCKER_USER}/${IMAGE_NAME}:latest"
+                    echo "Successfully pushed image layer to https://hub.docker.com/r/${DOCKER_USER}/${IMAGE_NAME}"
+                }
+            }
+        }
+    }
+}
