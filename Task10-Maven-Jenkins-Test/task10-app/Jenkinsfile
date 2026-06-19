@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Project Information') {
+            steps {
+                echo 'GIR DevSecOps Internship - Task 10'
+                echo 'Intern: Shaik Sadik'
+                echo 'Project: Maven Unit Test Automation with Jenkins'
+            }
+        }
+
+        stage('Checkout Source') {
+            steps {
+                echo 'Retrieving source files...'
+            }
+        }
+
+        stage('Execute Maven Unit Tests') {
+            steps {
+                echo 'Running JUnit Unit Tests...'
+                sh 'mvn test'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Publishing JUnit Test Results...'
+            junit 'target/surefire-reports/*.xml'
+        }
+
+        success {
+            echo 'Task 10 completed successfully.'
+        }
+
+        failure {
+            echo 'Unit tests failed. Build marked as FAILED.'
+        }
+    }
+}
