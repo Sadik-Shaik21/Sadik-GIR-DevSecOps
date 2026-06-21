@@ -1,0 +1,18 @@
+Task 11 - Trivy Image Scan
+
+Image Scanned: nginx:latest
+
+Commands Executed:
+docker pull nginx:latest
+docker run --rm aquasec/trivy:latest image nginx:latest
+
+Result:
+Trivy successfully detected vulnerabilities and displayed CVE results.
+
+Issue Faced:
+JSON export encountered timeout error:
+"context deadline exceeded"
+
+Resolution:
+Retried scan multiple times with increased timeout values.
+Vulnerability scan completed successfully and evidence was captured through screenshots.
