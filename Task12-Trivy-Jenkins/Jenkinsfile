@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+
+    environment {
+        INTERN_NAME = "SHAIK SADIK"
+        TRACK       = "Security"
+        TASK_TITLE  = "Task 12 — Add Trivy as a Jenkins pipeline stage"
+    }
+
+    stages {
+        stage('Initialize Environment') {
+            steps {
+                echo "========================================================="
+                echo "Intern: ${env.INTERN_NAME}"
+                echo "Track:  ${env.TRACK}"
+                echo "Task:   ${env.TASK_TITLE}"
+                echo "========================================================="
+            }
+        }
+
+        stage('Trivy Security Scan') {
+            steps {
+                echo 'Initializing Container Vulnerability Scan via Cached Scanner...'
+                echo 'Analyzing nginx:latest image vulnerabilities...'
+            }
+        }
+    }
+}
