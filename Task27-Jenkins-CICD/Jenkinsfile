@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = "sadikshaik21/task27-app"
+        EC2_IP = "100.53.112.206"
     }
 
     stages {
@@ -28,6 +29,21 @@ pipeline {
                     sh '''
                     echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                     docker push $IMAGE_NAME
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(['ec2-ssh-key']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@$EC2_IP "
+                    docker pull $IMAGE_NAME &&
+                    docker stop task27-app || true &&
+                    docker rm task27-app || true &&
+                    docker run -d --name task27-app -p 80:80 $IMAGE_NAME
+                    "
                     '''
                 }
             }
