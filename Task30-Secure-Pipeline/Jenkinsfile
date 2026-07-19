@@ -49,9 +49,11 @@ pipeline {
         stage('Trivy Security Scan') {
             steps {
                 echo 'Downloading and executing live Trivy filesystem scan...'
-                // Combined into distinct sh commands to ensure Jenkins runs the execution step completely
-                sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /tmp v0.49.1'
-                sh '/tmp/trivy fs --exit-code 0 --severity HIGH,CRITICAL .'
+                // Chaining with && inside a single shell block guarantees sequential execution
+                sh '''
+                    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /tmp v0.49.1 && \
+                    /tmp/trivy fs --exit-code 0 --severity HIGH,CRITICAL .
+                '''
             }
         }
     }
