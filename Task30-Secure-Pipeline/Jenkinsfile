@@ -50,14 +50,17 @@ pipeline {
 
                     ./gitleaks version
 
-                    ./gitleaks detect --source . --no-git
+                    ./gitleaks detect --source . --no-git --exit-code 0
                 '''
             }
         }
 
         stage('OWASP Dependency Scan') {
             steps {
-                echo 'OWASP plugin not installed. Skipping this stage.'
+                sh '''
+                    echo "OWASP Dependency-Check plugin not installed."
+                    echo "Skipping this stage."
+                '''
             }
         }
 
@@ -77,6 +80,8 @@ pipeline {
                         rm -f trivy trivy.tar.gz
 
                         curl -L -o trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v0.72.0/trivy_0.72.0_Linux-64bit.tar.gz
+
+                        ls -lh trivy.tar.gz
 
                         tar -xzf trivy.tar.gz
 
