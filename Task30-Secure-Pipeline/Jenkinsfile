@@ -6,28 +6,10 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "secure-app"
+        DOCKER_IMAGE = "sadikshaik21/task30-app:latest"
     }
 
     stages {
-
-        stage('Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Tool Install') {
-            steps {
-                sh '''
-                    java -version || true
-                    mvn -version || true
-                    git --version || true
-                    curl --version || true
-                '''
-            }
-        }
-
         stage('Clone Repository') {
             steps {
                 echo 'Pulling the latest source files...'
@@ -37,76 +19,51 @@ pipeline {
         stage('Gitleaks Secret Scan') {
             steps {
                 echo 'Downloading and running Gitleaks...'
-
                 sh '''
-                    rm -rf gitleaks
-                    rm -f gitleaks.tar.gz
-
+                    rm -f gitleaks.tar.gz gitleaks
                     curl -L -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.24.2/gitleaks_8.24.2_linux_x64.tar.gz
-
-                    tar -xzf gitleaks.tar.gz
-
+                    tar -xzf gitleaks.tar.gz gitleaks
                     chmod +x gitleaks
-
-                    ./gitleaks version
-
-                    ./gitleaks detect --source . --no-git --exit-code 0
+                    # Enforcing exit-code=0 allows the pipeline to generate reports without crashing mid-run
+                    ./gitleaks detect --source . --no-git --exit-code=0
                 '''
             }
         }
 
         stage('OWASP Dependency Scan') {
             steps {
-                sh '''
-                    echo "OWASP Dependency-Check plugin not installed."
-                    echo "Skipping this stage."
-                '''
+                echo 'Invoking live OWASP dependency check inside Task30 directory...'
+                dir('Task30-Secure-Pipeline') {
+                    sh 'mvn org.owasp:dependency-check-maven:check'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    echo "Simulating Docker build..."
-                    echo "docker build -t ${IMAGE_NAME}:latest ."
-                '''
+                echo "Simulating Docker build layout for: ${DOCKER_IMAGE}"
+                dir('Task30-Secure-Pipeline') {
+                    echo 'Skipping native host container engine command to bypass binary environment paths.'
+                }
             }
         }
 
         stage('Trivy Security Scan') {
             steps {
-                dir('/tmp') {
-                    sh '''
-                        rm -f trivy trivy.tar.gz
-
-                        curl -L -o trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v0.72.0/trivy_0.72.0_Linux-64bit.tar.gz
-
-                        ls -lh trivy.tar.gz
-
-                        tar -xzf trivy.tar.gz
-
-                        chmod +x trivy
-
-                        ./trivy --version
-
-                        ./trivy fs --exit-code 0 --severity HIGH,CRITICAL $WORKSPACE
-                    '''
-                }
+                echo 'Downloading and executing live Trivy filesystem scan...'
+                sh '''
+                    rm -f trivy trivy.tar.gz
+                    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b . v0.49.1
+                    chmod +x trivy
+                    ./trivy fs --exit-code 0 --severity HIGH,CRITICAL .
+                '''
             }
         }
     }
-
+    
     post {
         always {
             echo 'Pipeline execution phase completed. Task 30 Infrastructure Validated.'
-        }
-
-        success {
-            echo 'Pipeline completed successfully.'
-        }
-
-        failure {
-            echo 'Pipeline failed.'
         }
     }
 }
