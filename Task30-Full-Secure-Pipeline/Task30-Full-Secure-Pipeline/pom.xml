@@ -1,7 +1,0 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.gir</groupId>
-    <artifactId>task30</artifactId>
-    <version>1.0</version>
-    <packaging>jar</packaging>
-</project>
