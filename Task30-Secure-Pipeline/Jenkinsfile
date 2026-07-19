@@ -1,7 +1,6 @@
 pipeline {
     agent any
 
-    // Link the global Maven 3.9 tool you configured in the Jenkins dashboard UI
     tools {
         maven 'maven-3.9'
     }
@@ -31,16 +30,20 @@ pipeline {
 
         stage('OWASP Dependency Scan') {
             steps {
-                echo 'Invoking live OWASP dependency check via automated Jenkins Maven tool...'
-                // Running the security checker live on your pom.xml definition
-                sh 'mvn org.owasp:dependency-check-maven:check -DautoUpdate=false'
+                echo 'Invoking live OWASP dependency check inside Task30 directory...'
+                // Step inside the subdirectory where pom.xml actually lives
+                dir('Task30-Secure-Pipeline') {
+                    sh 'mvn org.owasp:dependency-check-maven:check -DautoUpdate=false'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 echo "Simulating Docker build for: ${DOCKER_IMAGE}"
-                echo 'Skipping native docker build step due to environment missing docker engine binary...'
+                dir('Task30-Secure-Pipeline') {
+                    echo 'Skipping native docker build step due to environment missing docker engine binary...'
+                }
             }
         }
     }
