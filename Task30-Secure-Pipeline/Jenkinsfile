@@ -31,9 +31,9 @@ pipeline {
         stage('OWASP Dependency Scan') {
             steps {
                 echo 'Invoking live OWASP dependency check inside Task30 directory...'
-                // Step inside the subdirectory where pom.xml actually lives
                 dir('Task30-Secure-Pipeline') {
-                    sh 'mvn org.owasp:dependency-check-maven:check -DautoUpdate=false'
+                    // Removed the autoUpdate=false flag so it can download the initial database safely
+                    sh 'mvn org.owasp:dependency-check-maven:check'
                 }
             }
         }
