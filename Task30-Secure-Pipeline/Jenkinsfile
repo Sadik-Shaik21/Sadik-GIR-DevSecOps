@@ -63,16 +63,15 @@ pipeline {
 
         stage('Trivy Security Scan') {
             steps {
-                dir('/tmp') {
-                    sh '''
-                        rm -f trivy trivy.tar.gz
-                        curl -L -o trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v0.72.0/trivy_0.72.0_Linux-64bit.tar.gz
-                        tar -xzf trivy.tar.gz trivy
-                        chmod +x trivy
-                        ./trivy --version
-                        ./trivy fs --exit-code 0 --severity HIGH,CRITICAL $WORKSPACE
-                    '''
-                }
+                sh '''
+                    cd /tmp
+                    rm -f trivy trivy.tar.gz
+                    curl -L -o trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v0.72.0/trivy_0.72.0_Linux-64bit.tar.gz
+                    tar -xzf trivy.tar.gz trivy
+                    chmod +x trivy
+                    ./trivy --version
+                    ./trivy fs --exit-code 0 --severity HIGH,CRITICAL "$WORKSPACE"
+                '''
             }
         }
     }
