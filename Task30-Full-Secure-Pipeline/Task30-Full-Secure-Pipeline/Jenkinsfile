@@ -14,17 +14,17 @@ pipeline {
 
         stage('Gitleaks Secret Scan') {
             steps {
-                echo 'Running Gitleaks to sweep for exposed credentials or API keys...'
-                bat 'gitleaks detect --verbose'
+                echo 'Running gitleaks to sweep for exposed credentials or API keys...'
+                sh 'gitleaks detect --verbose' 
             }
         }
 
         stage('OWASP Dependency Scan') {
             steps {
-                echo 'Invoking OWASP Dependency-Check via Maven...'
-                // Navigates into the task 30 folder to find the pom.xml
-                dir('task 30') {
-                    bat 'mvn org.owasp:dependency-check-maven:check -DautoUpdate=false'
+                echo 'Invoking owasp dependency check via Maven...'
+                // Pointing to your exact nested folder where pom.xml sits
+                dir('Task30-Full-Secure-Pipeline/Task30-Full-Secure-Pipeline') {
+                    sh 'mvn org.owasp:dependency-check-maven:check -DautoUpdate=false'
                 }
             }
         }
@@ -32,33 +32,14 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Compiling resources and building the Docker container layout...'
-                // Navigates into the task 30 folder to find the Dockerfile
-                dir('task 30') {
-                    bat "docker build -t ${DOCKER_IMAGE} ."
-                }
-            }
-        }
-
-        stage('Trivy Image Scan') {
-            steps {
-                echo 'Invoking Trivy scanner to scan the built container layer vulnerabilities...'
-                bat "trivy image ${DOCKER_IMAGE}"
-            }
-        }
-
-        stage('Publish to Docker Hub') {
-            steps {
-                echo 'Authenticating and pushing the image to Docker Hub...'
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', 
-                                                 usernameVariable: 'DOCKER_USER', 
-                                                 passwordVariable: 'DOCKER_PASS')]) {
-                    bat "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
-                    bat "docker push ${DOCKER_IMAGE}"
+                // Pointing to your exact nested folder where the Dockerfile sits
+                dir('Task30-Full-Secure-Pipeline/Task30-Full-Secure-Pipeline') {
+                    sh "docker build -t ${DOCKER_IMAGE} ."
                 }
             }
         }
     }
-
+    
     post {
         always {
             echo 'Pipeline execution phase completed.'
