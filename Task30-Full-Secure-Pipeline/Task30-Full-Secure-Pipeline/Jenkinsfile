@@ -14,15 +14,19 @@ pipeline {
 
         stage('Gitleaks Secret Scan') {
             steps {
-                echo 'Running gitleaks to sweep for exposed credentials or API keys...'
-                sh 'gitleaks detect --verbose' 
+                echo 'Downloading and running Gitleaks...'
+                sh '''
+                    curl -sSLo gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz
+                    tar -xzf gitleaks.tar.gz gitleaks
+                    chmod +x gitleaks
+                    ./gitleaks detect --source . --verbose
+                '''
             }
         }
 
         stage('OWASP Dependency Scan') {
             steps {
                 echo 'Invoking owasp dependency check via Maven...'
-                // Pointing to your exact nested folder where pom.xml sits
                 dir('Task30-Full-Secure-Pipeline/Task30-Full-Secure-Pipeline') {
                     sh 'mvn org.owasp:dependency-check-maven:check -DautoUpdate=false'
                 }
@@ -32,7 +36,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Compiling resources and building the Docker container layout...'
-                // Pointing to your exact nested folder where the Dockerfile sits
                 dir('Task30-Full-Secure-Pipeline/Task30-Full-Secure-Pipeline') {
                     sh "docker build -t ${DOCKER_IMAGE} ."
                 }
