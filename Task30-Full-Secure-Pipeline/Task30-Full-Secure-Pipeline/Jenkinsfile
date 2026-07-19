@@ -1,4 +1,18 @@
-stage('Gitleaks Secret Scan') {
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "sadikshaik21/task30-app:latest"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                echo 'Pulling the latest source files...'
+            }
+        }
+
+        stage('Gitleaks Secret Scan') {
             steps {
                 echo 'Downloading and running Gitleaks...'
                 sh '''
@@ -9,3 +23,29 @@ stage('Gitleaks Secret Scan') {
                 '''
             }
         }
+
+        stage('OWASP Dependency Scan') {
+            steps {
+                echo 'Invoking owasp dependency check via Maven...'
+                dir('Task30-Full-Secure-Pipeline/Task30-Full-Secure-Pipeline') {
+                    sh 'mvn org.owasp:dependency-check-maven:check -DautoUpdate=false'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Compiling resources and building the Docker container layout...'
+                dir('Task30-Full-Secure-Pipeline/Task30-Full-Secure-Pipeline') {
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Pipeline execution phase completed.'
+        }
+    }
+}
