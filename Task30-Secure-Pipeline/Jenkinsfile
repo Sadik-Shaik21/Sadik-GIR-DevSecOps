@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    // Link the global Maven 3.9 tool you configured in the Jenkins dashboard UI
+    tools {
+        maven 'maven-3.9'
+    }
+
     environment {
         DOCKER_IMAGE = "sadikshaik21/task30-app:latest"
     }
@@ -26,7 +31,9 @@ pipeline {
 
         stage('OWASP Dependency Scan') {
             steps {
-                echo 'Skipping Maven-dependent OWASP scan on host container due to environment missing mvn tool...'
+                echo 'Invoking live OWASP dependency check via automated Jenkins Maven tool...'
+                // Running the security checker live on your pom.xml definition
+                sh 'mvn org.owasp:dependency-check-maven:check -DautoUpdate=false'
             }
         }
 
@@ -40,7 +47,7 @@ pipeline {
     
     post {
         always {
-            echo 'Pipeline execution phase completed. Task 30 Structural Verification Successful!'
+            echo 'Pipeline execution phase completed.'
         }
     }
 }
